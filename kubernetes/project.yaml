@@ -1,0 +1,72 @@
+---
+# Deployment Configuration
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: spring-kubernetes-zero-downtime-tutorial
+  name: spring-kubernetes-zero-downtime-tutorial
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: spring-kubernetes-zero-downtime-tutorial
+  replicas: 3 # Number of replicas that will be created for this deployment
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1          # Allows one extra pod above the desired number during the update
+      maxUnavailable: 0    # Ensure no pod is taken down until a new one is ready
+  template:
+    metadata:
+      labels:
+        app: spring-kubernetes-zero-downtime-tutorial
+      name: spring-kubernetes-zero-downtime-tutorial
+    spec:
+      containers:
+        - image: spring-kubernetes-zero-downtime-tutorial:1.0.0
+          imagePullPolicy: IfNotPresent
+          name: container-0
+          ports:
+            - containerPort: 8080 # Internal port
+              name: http
+              protocol: TCP
+          lifecycle:
+            # This PreStop hook adds a 10-second delay before Kubernetes forcefully stops the pod,
+            # allowing the application to gracefully complete in-flight requests.
+            preStop:
+              exec:
+                command: [ "sleep", "10" ]
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 20
+          
+      restartPolicy: Always
+---
+# Service Configuration
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: spring-kubernetes-zero-downtime-tutorial
+  name: spring-kubernetes-zero-downtime-tutorial
+  namespace: default
+spec:
+  ports:
+    - name: http
+      port: 8080 # The port exposed by the service
+      protocol: TCP
+      targetPort: 8080 # Internal port
+  selector:
+    app: spring-kubernetes-zero-downtime-tutorial
+  sessionAffinity: None
+  type: LoadBalancer # type of the service. LoadBalancer indicates that our service will be external.
