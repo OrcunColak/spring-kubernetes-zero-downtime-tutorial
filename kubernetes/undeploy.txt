@@ -5,7 +5,7 @@ kubectl describe pod <podname>
 kubectl apply -f project.yaml
 
 # Undeploy
-kubectl delete svc spring-kubernetes-secret-tutorial
-kubectl delete deployment spring-kubernetes-secret-tutorial
+kubectl delete svc spring-kubernetes-zero-downtime-tutorial
+kubectl delete deployment spring-kubernetes-zero-downtime-tutorial
 
-kubectl delete all --selector=app=spring-kubernetes-secret-tutorial
+kubectl delete all --selector=app=spring-kubernetes-zero-downtime-tutorial
