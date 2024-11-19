@@ -12,6 +12,13 @@ spec:
     matchLabels:
       app: spring-kubernetes-zero-downtime-tutorial
   replicas: 3 # Number of replicas that will be created for this deployment
+
+# strategy:
+#   type: RollingUpdate
+#   rollingUpdate:
+#     maxSurge: 25%
+#     maxUnavailable: 25%
+  
   strategy:
     type: RollingUpdate
     rollingUpdate:
